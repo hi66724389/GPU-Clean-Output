@@ -1,0 +1,9 @@
+build/
+.vs/
+out/
+*.user
+*.suo
+*.sln.docstates
+.DS_Store
+
+*.zip
