@@ -1,5 +1,7 @@
 # OBS Clean Output Plugin (`obs-clean-output`)
 
+[English](README.md) | [正體中文](README.zh-TW.md)
+
 An advanced, high-performance OBS Studio output plugin for Windows 10/11. It streams clean-feed video (Program or Preview) directly to physical HDMI/DisplayPort monitors configured as **Specialized Displays** ("Remove display from desktop") using DirectX 11 and WinRT `Windows.Devices.Display.Core`.
 
 By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `obs-clean-output` achieves zero-copy, hardware-exclusive direct scanout with broadcast-grade ultra-low latency.
