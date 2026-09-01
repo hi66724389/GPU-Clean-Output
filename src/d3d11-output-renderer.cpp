@@ -23,7 +23,7 @@ void D3D11OutputRenderer::Cleanup() {
     scanout_texture_ = nullptr;
     context_ = nullptr;
     device_ = nullptr;
-    blog(LOG_INFO, "[obs-clean-output] D3D11OutputRenderer cleaned up.");
+    blog(LOG_INFO, "[GPU-Clean-Output] D3D11OutputRenderer cleaned up.");
 }
 
 void D3D11OutputRenderer::DestroyStagesurf() {
@@ -61,11 +61,11 @@ bool D3D11OutputRenderer::InitializeOnAdapter(IDXGIAdapter *adapter, uint32_t wi
     );
 
     if (FAILED(hr)) {
-        blog(LOG_ERROR, "[obs-clean-output] D3D11CreateDevice on WinRT adapter failed: 0x%08X", hr);
+        blog(LOG_ERROR, "[GPU-Clean-Output] D3D11CreateDevice on WinRT adapter failed: 0x%08X", hr);
         return false;
     }
 
-    blog(LOG_INFO, "[obs-clean-output] D3D11OutputRenderer initialized on WinRT adapter (%ux%u, feature level 0x%X)", 
+    blog(LOG_INFO, "[GPU-Clean-Output] D3D11OutputRenderer initialized on WinRT adapter (%ux%u, feature level 0x%X)", 
         width_, height_, static_cast<int>(out_level));
     return true;
 }
@@ -89,11 +89,11 @@ bool D3D11OutputRenderer::BindScanoutTarget(HANDLE scanoutSharedHandle) {
             
             D3D11_TEXTURE2D_DESC desc;
             scanout_texture_->GetDesc(&desc);
-            blog(LOG_INFO, "[obs-clean-output] Scanout texture bound via OpenSharedResource1: %ux%u, Format=%d, Usage=%d",
+            blog(LOG_INFO, "[GPU-Clean-Output] Scanout texture bound via OpenSharedResource1: %ux%u, Format=%d, Usage=%d",
                 desc.Width, desc.Height, desc.Format, desc.Usage);
             return true;
         }
-        blog(LOG_WARNING, "[obs-clean-output] OpenSharedResource1 failed: 0x%08X, trying OpenSharedResource...", hr);
+        blog(LOG_WARNING, "[GPU-Clean-Output] OpenSharedResource1 failed: 0x%08X, trying OpenSharedResource...", hr);
     }
 
     // Fallback to OpenSharedResource (D3D11.0)
@@ -108,13 +108,13 @@ bool D3D11OutputRenderer::BindScanoutTarget(HANDLE scanoutSharedHandle) {
             
             D3D11_TEXTURE2D_DESC desc;
             scanout_texture_->GetDesc(&desc);
-            blog(LOG_INFO, "[obs-clean-output] Scanout texture bound via OpenSharedResource: %ux%u, Format=%d",
+            blog(LOG_INFO, "[GPU-Clean-Output] Scanout texture bound via OpenSharedResource: %ux%u, Format=%d",
                 desc.Width, desc.Height, desc.Format);
             return true;
         }
     }
 
-    blog(LOG_ERROR, "[obs-clean-output] BindScanoutTarget failed: 0x%08X", hr);
+    blog(LOG_ERROR, "[GPU-Clean-Output] BindScanoutTarget failed: 0x%08X", hr);
     return false;
 }
 
@@ -123,7 +123,7 @@ bool D3D11OutputRenderer::InitializeGPUSharedTexture() {
 
     ID3D11Device *obs_device = static_cast<ID3D11Device*>(gs_get_device_obj());
     if (!obs_device) {
-        blog(LOG_ERROR, "[obs-clean-output] OBS primary D3D11 device unavailable.");
+        blog(LOG_ERROR, "[GPU-Clean-Output] OBS primary D3D11 device unavailable.");
         return false;
     }
 
@@ -188,7 +188,7 @@ bool D3D11OutputRenderer::InitializeGPUSharedTexture() {
     producer_idx_ = 0;
     latest_produced_idx_.store(0);
 
-    blog(LOG_INFO, "[obs-clean-output] Triple-Buffer Shared Surface Pool initialized! (%ux%u, 3 Buffers Zero-Stall)",
+    blog(LOG_INFO, "[GPU-Clean-Output] Triple-Buffer Shared Surface Pool initialized! (%ux%u, 3 Buffers Zero-Stall)",
         width_, height_);
     return true;
 }

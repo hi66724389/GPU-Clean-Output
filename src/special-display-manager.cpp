@@ -48,16 +48,16 @@ std::vector<DisplayTargetInfo> SpecialDisplayManager::EnumerateSpecializedDispla
             }
         }
     } catch (const winrt::hresult_error& ex) {
-        blog(LOG_ERROR, "[obs-clean-output] WinRT Exception in EnumerateSpecializedDisplays: %ls", ex.message().c_str());
+        blog(LOG_ERROR, "[GPU-Clean-Output] WinRT Exception in EnumerateSpecializedDisplays: %ls", ex.message().c_str());
     } catch (...) {
-        blog(LOG_ERROR, "[obs-clean-output] Exception in EnumerateSpecializedDisplays");
+        blog(LOG_ERROR, "[GPU-Clean-Output] Exception in EnumerateSpecializedDisplays");
     }
     return result;
 }
 
 bool SpecialDisplayManager::Initialize(const std::string &target_id) {
     try {
-        blog(LOG_INFO, "[obs-clean-output] Initializing DisplayManager...");
+        blog(LOG_INFO, "[GPU-Clean-Output] Initializing DisplayManager...");
         if (!display_manager_) {
             display_manager_ = DisplayManager::Create(DisplayManagerOptions::None);
         }
@@ -66,7 +66,7 @@ bool SpecialDisplayManager::Initialize(const std::string &target_id) {
         target_ = nullptr;
 
         if (displays.empty()) {
-            blog(LOG_WARNING, "[obs-clean-output] No Specialized Display Target found.");
+            blog(LOG_WARNING, "[GPU-Clean-Output] No Specialized Display Target found.");
             return false;
         }
 
@@ -86,34 +86,34 @@ bool SpecialDisplayManager::Initialize(const std::string &target_id) {
             device_name_ = displays[0].name;
         }
 
-        blog(LOG_INFO, "[obs-clean-output] Selected Specialized Display Target: %s", device_name_.c_str());
+        blog(LOG_INFO, "[GPU-Clean-Output] Selected Specialized Display Target: %s", device_name_.c_str());
         return true;
     }
     catch (const winrt::hresult_error& ex) {
-        blog(LOG_ERROR, "[obs-clean-output] WinRT Exception in Initialize: %ls (0x%08X)", 
+        blog(LOG_ERROR, "[GPU-Clean-Output] WinRT Exception in Initialize: %ls (0x%08X)", 
             ex.message().c_str(), static_cast<uint32_t>(ex.code()));
         return false;
     }
     catch (const std::exception& ex) {
-        blog(LOG_ERROR, "[obs-clean-output] Standard Exception in Initialize: %s", ex.what());
+        blog(LOG_ERROR, "[GPU-Clean-Output] Standard Exception in Initialize: %s", ex.what());
         return false;
     }
 }
 
 bool SpecialDisplayManager::TryApplyAndLock(winrt::Windows::Graphics::DirectX::DirectXPixelFormat format) {
     if (!target_) {
-        blog(LOG_ERROR, "[obs-clean-output] Cannot lock display: target is null.");
+        blog(LOG_ERROR, "[GPU-Clean-Output] Cannot lock display: target is null.");
         return false;
     }
 
     try {
-        blog(LOG_INFO, "[obs-clean-output] Acquiring target state and locking display...");
+        blog(LOG_INFO, "[GPU-Clean-Output] Acquiring target state and locking display...");
         auto targetsList = winrt::single_threaded_vector<DisplayTarget>();
         targetsList.Append(target_);
 
         DisplayManagerResultWithState result = display_manager_.TryAcquireTargetsAndCreateEmptyState(targetsList);
         if (result.ErrorCode() != DisplayManagerResult::Success) {
-            blog(LOG_ERROR, "[obs-clean-output] TryAcquireTargetsAndCreateEmptyState failed with code: %d", 
+            blog(LOG_ERROR, "[GPU-Clean-Output] TryAcquireTargetsAndCreateEmptyState failed with code: %d", 
                 static_cast<int>(result.ErrorCode()));
             return false;
         }
@@ -130,17 +130,17 @@ bool SpecialDisplayManager::TryApplyAndLock(winrt::Windows::Graphics::DirectX::D
             if (modes.Size() > 0) {
                 auto preferredMode = modes.GetAt(0);
                 path_.ApplyPropertiesFromMode(preferredMode);
-                blog(LOG_INFO, "[obs-clean-output] Applied DisplayMode: %ux%u", 
+                blog(LOG_INFO, "[GPU-Clean-Output] Applied DisplayMode: %ux%u", 
                     preferredMode.SourceResolution().Width, preferredMode.SourceResolution().Height);
             }
         } catch (...) {
-            blog(LOG_WARNING, "[obs-clean-output] Could not query/apply explicit DisplayMode, using default.");
+            blog(LOG_WARNING, "[GPU-Clean-Output] Could not query/apply explicit DisplayMode, using default.");
         }
 
         // Functionalize display state to ensure valid topology and wire format
         DisplayStateOperationResult funcResult = display_state_.TryFunctionalize(DisplayStateFunctionalizeOptions::None);
         if (funcResult.Status() != DisplayStateOperationStatus::Success) {
-            blog(LOG_WARNING, "[obs-clean-output] TryFunctionalize status: %d", static_cast<int>(funcResult.Status()));
+            blog(LOG_WARNING, "[GPU-Clean-Output] TryFunctionalize status: %d", static_cast<int>(funcResult.Status()));
         }
 
         // Create DisplayDevice for scanout operations
@@ -149,7 +149,7 @@ bool SpecialDisplayManager::TryApplyAndLock(winrt::Windows::Graphics::DirectX::D
         // Apply state to lock display exclusively and activate HDMI timing output
         DisplayStateOperationResult applyResult = display_state_.TryApply(DisplayStateApplyOptions::None);
         if (applyResult.Status() != DisplayStateOperationStatus::Success) {
-            blog(LOG_ERROR, "[obs-clean-output] TryApply failed with status: %d", 
+            blog(LOG_ERROR, "[GPU-Clean-Output] TryApply failed with status: %d", 
                 static_cast<int>(applyResult.Status()));
             return false;
         }
@@ -190,18 +190,18 @@ bool SpecialDisplayManager::TryApplyAndLock(winrt::Windows::Graphics::DirectX::D
                 &surface_shared_handle_
             );
             if (FAILED(hr)) {
-                blog(LOG_ERROR, "[obs-clean-output] CreateSharedHandle for DisplaySurface failed: 0x%08X", hr);
+                blog(LOG_ERROR, "[GPU-Clean-Output] CreateSharedHandle for DisplaySurface failed: 0x%08X", hr);
             } else {
-                blog(LOG_INFO, "[obs-clean-output] DisplaySurface shared handle created successfully.");
+                blog(LOG_INFO, "[GPU-Clean-Output] DisplaySurface shared handle created successfully.");
             }
         }
 
-        blog(LOG_INFO, "[obs-clean-output] Specialized display successfully locked & scanout pipeline ready! Resolution: %ux%u, Format: %d", 
+        blog(LOG_INFO, "[GPU-Clean-Output] Specialized display successfully locked & scanout pipeline ready! Resolution: %ux%u, Format: %d", 
             width_, height_, static_cast<int>(format));
         return true;
     }
     catch (const winrt::hresult_error& ex) {
-        blog(LOG_ERROR, "[obs-clean-output] WinRT Exception in TryApplyAndLock: %ls (0x%08X)", 
+        blog(LOG_ERROR, "[GPU-Clean-Output] WinRT Exception in TryApplyAndLock: %ls (0x%08X)", 
             ex.message().c_str(), static_cast<uint32_t>(ex.code()));
         return false;
     }
@@ -216,10 +216,10 @@ void SpecialDisplayManager::PresentScanout() {
         task.SetScanout(scanout_);
         task_pool_.ExecuteTask(task);
     } catch (const winrt::hresult_error& ex) {
-        blog(LOG_ERROR, "[obs-clean-output] WinRT Exception in PresentScanout: %ls (0x%08X)", 
+        blog(LOG_ERROR, "[GPU-Clean-Output] WinRT Exception in PresentScanout: %ls (0x%08X)", 
             ex.message().c_str(), static_cast<uint32_t>(ex.code()));
     } catch (...) {
-        blog(LOG_ERROR, "[obs-clean-output] Exception in PresentScanout");
+        blog(LOG_ERROR, "[GPU-Clean-Output] Exception in PresentScanout");
     }
 }
 
@@ -235,11 +235,11 @@ void SpecialDisplayManager::Release() {
             if (result.ErrorCode() == DisplayManagerResult::Success) {
                 auto emptyState = result.State();
                 emptyState.TryApply(DisplayStateApplyOptions::None);
-                blog(LOG_INFO, "[obs-clean-output] Applied unattached state: HDMI signal turned OFF (No Signal).");
+                blog(LOG_INFO, "[GPU-Clean-Output] Applied unattached state: HDMI signal turned OFF (No Signal).");
             }
         }
     } catch (...) {
-        blog(LOG_WARNING, "[obs-clean-output] Could not apply unattached state during release.");
+        blog(LOG_WARNING, "[GPU-Clean-Output] Could not apply unattached state during release.");
     }
 
     if (surface_shared_handle_) {
@@ -260,7 +260,7 @@ void SpecialDisplayManager::Release() {
     dxgi_adapter_ = nullptr;
     dxgi_factory_ = nullptr;
 
-    blog(LOG_INFO, "[obs-clean-output] Specialized display released.");
+    blog(LOG_INFO, "[GPU-Clean-Output] Specialized display released.");
 }
 
 IDXGIAdapter *SpecialDisplayManager::GetDXGIAdapter() {
@@ -269,7 +269,7 @@ IDXGIAdapter *SpecialDisplayManager::GetDXGIAdapter() {
     }
 
     if (!target_) {
-        blog(LOG_ERROR, "[obs-clean-output] GetDXGIAdapter: target_ is null");
+        blog(LOG_ERROR, "[GPU-Clean-Output] GetDXGIAdapter: target_ is null");
         return nullptr;
     }
 
@@ -280,33 +280,33 @@ IDXGIAdapter *SpecialDisplayManager::GetDXGIAdapter() {
         luid.LowPart = adapterId.LowPart;
         luid.HighPart = adapterId.HighPart;
 
-        blog(LOG_INFO, "[obs-clean-output] WinRT Adapter LUID: %u:%d", luid.LowPart, luid.HighPart);
+        blog(LOG_INFO, "[GPU-Clean-Output] WinRT Adapter LUID: %u:%d", luid.LowPart, luid.HighPart);
 
         if (!dxgi_factory_) {
             HRESULT hr = CreateDXGIFactory2(0, IID_PPV_ARGS(dxgi_factory_.put()));
             if (FAILED(hr)) {
-                blog(LOG_ERROR, "[obs-clean-output] CreateDXGIFactory2 failed: 0x%08X", hr);
+                blog(LOG_ERROR, "[GPU-Clean-Output] CreateDXGIFactory2 failed: 0x%08X", hr);
                 return nullptr;
             }
         }
 
         HRESULT hr = dxgi_factory_->EnumAdapterByLuid(luid, IID_PPV_ARGS(dxgi_adapter_.put()));
         if (FAILED(hr)) {
-            blog(LOG_ERROR, "[obs-clean-output] EnumAdapterByLuid failed: 0x%08X", hr);
+            blog(LOG_ERROR, "[GPU-Clean-Output] EnumAdapterByLuid failed: 0x%08X", hr);
             return nullptr;
         }
 
         DXGI_ADAPTER_DESC desc;
         dxgi_adapter_->GetDesc(&desc);
-        blog(LOG_INFO, "[obs-clean-output] Matched DXGI Adapter: %ls", desc.Description);
+        blog(LOG_INFO, "[GPU-Clean-Output] Matched DXGI Adapter: %ls", desc.Description);
 
         return dxgi_adapter_.get();
 
     } catch (const winrt::hresult_error& ex) {
-        blog(LOG_ERROR, "[obs-clean-output] WinRT error in GetDXGIAdapter: %ls", ex.message().c_str());
+        blog(LOG_ERROR, "[GPU-Clean-Output] WinRT error in GetDXGIAdapter: %ls", ex.message().c_str());
         return nullptr;
     } catch (...) {
-        blog(LOG_ERROR, "[obs-clean-output] Exception in GetDXGIAdapter");
+        blog(LOG_ERROR, "[GPU-Clean-Output] Exception in GetDXGIAdapter");
         return nullptr;
     }
 }

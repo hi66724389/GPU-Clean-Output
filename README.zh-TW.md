@@ -1,10 +1,10 @@
-# OBS Clean Output 外掛 (`obs-clean-output`)
+# GPU Clean Output 外掛 (`GPU-Clean-Output`)
 
 [English](README.md) | [正體中文](README.zh-TW.md)
 
-`obs-clean-output` 是一款專為 Windows 10/11 設計的高效能 OBS Studio 畫面輸出外掛。透過 DirectX 11 與 WinRT `Windows.Devices.Display.Core` API，本外掛能將 OBS 的無乾擾純淨畫面（Program 主畫面或 Preview 預覽畫面）直接傳送至設定為 **「特殊用途顯示器 (Specialized Display)」**（即從桌面移除）的實體 HDMI/DisplayPort 顯示器。
+`GPU-Clean-Output` 是一款專為 Windows 10/11 設計的高效能 OBS Studio 畫面輸出外掛。透過 DirectX 11 與 WinRT `Windows.Devices.Display.Core` API，本外掛能將 OBS 的無干擾純淨畫面（Program 主畫面或 Preview 預覽畫面）直接傳送至設定為 **「特殊用途顯示器 (Specialized Display)」**（即從桌面移除）的實體 HDMI/DisplayPort 顯示器。
 
-透過完全繞過 Windows 桌面視窗管理器 (DWM) 的畫面合成機制，`obs-clean-output` 實現了 GPU 零拷貝 (Zero-Copy) 與硬體獨佔直輸出 (Direct Scanout)，提供廣播級的亞毫秒超低延遲與極致順暢度。
+透過完全繞過 Windows 桌面視窗管理器 (DWM) 的畫面合成機制，`GPU-Clean-Output` 實現了 GPU 零拷貝 (Zero-Copy) 與硬體獨佔直輸出 (Direct Scanout)，提供廣播級的亞毫秒超低延遲與極致順暢度。
 
 ---
 
@@ -34,12 +34,12 @@
 
 ## 🔨 如何編譯 (How to Build)
 
-請依照以下步驟從原始碼編譯 `obs-clean-output.dll`：
+請依照以下步驟從原始碼編譯 `gpu-clean-output.dll`：
 
 ### 1. 複製專案庫 (Clone Repository)
 ```powershell
-git clone https://github.com/your-username/obs-clean-output.git
-cd obs-clean-output
+git clone https://github.com/your-username/GPU-Clean-Output.git
+cd GPU-Clean-Output
 ```
 
 ### 2. 使用 CMake 進行配置
@@ -62,21 +62,21 @@ cmake --build . --config Release
 ```
 
 編譯成功後，產出的 `.dll` 檔案將位於：
-`build/Release/obs-clean-output.dll`（或 `build/obs-clean-output.dll`）。
+`build/Release/gpu-clean-output.dll`（或 `build/gpu-clean-output.dll`）。
 
 ---
 
 ## 📦 如何安裝 `.dll` 檔案
 
 1. 若 OBS Studio 正在執行，請先將其完全關閉。
-2. 找到編譯好的 `obs-clean-output.dll` 檔案。
-3. 將 `obs-clean-output.dll` 複製到 OBS Studio 的外掛目錄中：
+2. 找到編譯好的 `gpu-clean-output.dll` 檔案。
+3. 將 `gpu-clean-output.dll` 複製到 OBS Studio 的外掛目錄中：
    * **標準安裝路徑 (64-bit)：**
      `C:\Program Files\obs-studio\obs-plugins\64bit\`
    * **便攜版安裝路徑 (Portable OBS Studio)：**
      `<OBS 安裝目錄>\obs-plugins\64bit\`
 4. 啟動 OBS Studio。
-5. 確認安裝：檢查 OBS 頂部選單欄是否出現 **工具 (Tools)** -> **`D3D11 Specialized Display Clean Output`**。
+5. 確認安裝：檢查 OBS 頂部選單欄是否出現 **工具 (Tools)** -> **`GPU Clean Output (Specialized Display)`**。
 
 ---
 
@@ -95,14 +95,14 @@ cmake --build . --config Release
 5. 找到 **「從桌面移除顯示器 (Remove display from desktop)」** 選項（或 **特殊用途顯示器** 開關），並將其切換為 **開啟 (ON)**。
 6. Windows 將立即將該顯示器自桌面視窗管理中移除（該顯示器將不再顯示 Windows 桌面背景或滑鼠游標）。
 
-> ℹ️ **注意：** 在 `obs-clean-output` 尚未接管並開始輸出畫面之前，該顯示器會暫時呈現黑畫面或進入待機狀態，此為正常現象。
+> ℹ️ **注意：** 在 `GPU-Clean-Output` 尚未接管並開始輸出畫面之前，該顯示器會暫時呈現黑畫面或進入待機狀態，此為正常現象。
 
 ---
 
 ### 步驟 2：於 OBS Studio 中啟動硬體直輸出
 
 1. 開啟 **OBS Studio**。
-2. 點選頂部選單欄的 **工具 (Tools)** -> **`D3D11 Specialized Display Clean Output`**。
+2. 點選頂部選單欄的 **工具 (Tools)** -> **`GPU Clean Output (Specialized Display)`**。
 3. 於外掛設定視窗中進行設定：
    * 勾選 **Enable Direct Output (啟動硬體直輸出)**。
    * **Target Specialized Display 1**：於下拉選單中選取您的目標顯示器（可選擇 `Auto-Detect First Specialized Display` 或指定該顯示器的硬體名稱）。
@@ -132,4 +132,4 @@ cmake --build . --config Release
 
 ## 📄 授權條款 (License)
 
-本專案採用 GPL-2.0 授權條款 - 詳情請參閱 LICENSE 檔案。
+本專案採用 GPL-2.0 授權條款 - 詳情請參閱 [LICENSE](LICENSE) 檔案。

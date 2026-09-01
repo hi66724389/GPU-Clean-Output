@@ -79,7 +79,7 @@ This skill provides step-by-step patterns, anti-patterns, and architectural prin
 
 ```cmake
 cmake_minimum_required(VERSION 3.18)
-project(obs-clean-output LANGUAGES CXX C)
+project(gpu-clean-output LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -35,7 +35,7 @@ void DisplayOutputSlot::UpdateShowingSource(obs_source_t *new_source) {
         pvw_showing_source = obs_source_get_ref(new_source);
         if (new_source) {
             const char *name = obs_source_get_name(new_source);
-            blog(LOG_INFO, "[obs-clean-output] Slot %d: Activated PVW source: %s", index + 1, name ? name : "(null)");
+            blog(LOG_INFO, "[GPU-Clean-Output] Slot %d: Activated PVW source: %s", index + 1, name ? name : "(null)");
         }
     }
 }
@@ -43,15 +43,15 @@ void DisplayOutputSlot::UpdateShowingSource(obs_source_t *new_source) {
 bool DisplayOutputSlot::Start() {
     if (active || target_id == "none") return false;
 
-    blog(LOG_INFO, "[obs-clean-output] Slot %d starting for target: %s...", index + 1, target_id.c_str());
+    blog(LOG_INFO, "[GPU-Clean-Output] Slot %d starting for target: %s...", index + 1, target_id.c_str());
 
     if (!display_manager->Initialize(target_id)) {
-        blog(LOG_ERROR, "[obs-clean-output] Slot %d: Failed to initialize DisplayManager for target: %s", index + 1, target_id.c_str());
+        blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to initialize DisplayManager for target: %s", index + 1, target_id.c_str());
         return false;
     }
 
     if (!display_manager->TryApplyAndLock()) {
-        blog(LOG_ERROR, "[obs-clean-output] Slot %d: Failed to lock specialized display", index + 1);
+        blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to lock specialized display", index + 1);
         return false;
     }
 
@@ -60,20 +60,20 @@ bool DisplayOutputSlot::Start() {
 
     IDXGIAdapter *adapter = display_manager->GetDXGIAdapter();
     if (!adapter) {
-        blog(LOG_ERROR, "[obs-clean-output] Slot %d: Failed to get DXGI adapter", index + 1);
+        blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to get DXGI adapter", index + 1);
         display_manager->Release();
         return false;
     }
 
     if (!renderer->InitializeOnAdapter(adapter, width, height)) {
-        blog(LOG_ERROR, "[obs-clean-output] Slot %d: Failed to initialize D3D11 renderer", index + 1);
+        blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to initialize D3D11 renderer", index + 1);
         display_manager->Release();
         return false;
     }
 
     HANDLE surface_handle = display_manager->GetSurfaceSharedHandle();
     if (!surface_handle || !renderer->BindScanoutTarget(surface_handle)) {
-        blog(LOG_ERROR, "[obs-clean-output] Slot %d: Failed to bind scanout target", index + 1);
+        blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to bind scanout target", index + 1);
         renderer->Cleanup();
         display_manager->Release();
         return false;
@@ -81,7 +81,7 @@ bool DisplayOutputSlot::Start() {
 
     // Initialize GPU Zero-Copy Shared Surface
     if (!renderer->InitializeGPUSharedTexture()) {
-        blog(LOG_WARNING, "[obs-clean-output] Slot %d: GPU Zero-Copy texture init warning, using staging fallback.", index + 1);
+        blog(LOG_WARNING, "[GPU-Clean-Output] Slot %d: GPU Zero-Copy texture init warning, using staging fallback.", index + 1);
     }
 
     // Launch Consumer worker thread
@@ -91,7 +91,7 @@ bool DisplayOutputSlot::Start() {
 
     active = true;
     is_degraded = false;
-    blog(LOG_INFO, "[obs-clean-output] Slot %d started successfully! (%ux%u)", index + 1, width, height);
+    blog(LOG_INFO, "[GPU-Clean-Output] Slot %d started successfully! (%ux%u)", index + 1, width, height);
     return true;
 }
 
@@ -130,11 +130,11 @@ void DisplayOutputSlot::Stop() {
     }
 
     StopPipelineInternal();
-    blog(LOG_INFO, "[obs-clean-output] Slot %d stopped.", index + 1);
+    blog(LOG_INFO, "[GPU-Clean-Output] Slot %d stopped.", index + 1);
 }
 
 void DisplayOutputSlot::WorkerThreadLoop() {
-    blog(LOG_INFO, "[obs-clean-output] Slot %d ultra-low latency consumer thread started.", index + 1);
+    blog(LOG_INFO, "[GPU-Clean-Output] Slot %d ultra-low latency consumer thread started.", index + 1);
 
     while (thread_running) {
         // Hybrid Spin-Wait: Spin for up to 500 iterations for sub-millisecond wakeup response
@@ -159,7 +159,7 @@ void DisplayOutputSlot::WorkerThreadLoop() {
         int count = pending_frames.exchange(0, std::memory_order_acq_rel);
         if (count > 0 && renderer && display_manager) {
             if (renderer->IsDeviceRemoved()) {
-                blog(LOG_WARNING, "[obs-clean-output] Slot %d: DXGI device removal detected in background thread!", index + 1);
+                blog(LOG_WARNING, "[GPU-Clean-Output] Slot %d: DXGI device removal detected in background thread!", index + 1);
                 is_degraded = true;
                 break;
             }
@@ -170,7 +170,7 @@ void DisplayOutputSlot::WorkerThreadLoop() {
         }
     }
 
-    blog(LOG_INFO, "[obs-clean-output] Slot %d consumer thread exiting.", index + 1);
+    blog(LOG_INFO, "[GPU-Clean-Output] Slot %d consumer thread exiting.", index + 1);
 }
 
 void DisplayOutputSlot::Render(obs_source_t *pvw_source) {
@@ -179,11 +179,11 @@ void DisplayOutputSlot::Render(obs_source_t *pvw_source) {
         uint64_t now = os_gettime_ns();
         if (now - last_reconnect_time > 2000000000ULL) { // Retry every 2 seconds
             last_reconnect_time = now;
-            blog(LOG_INFO, "[obs-clean-output] Slot %d: Attempting hot-plug auto-reconnection...", index + 1);
+            blog(LOG_INFO, "[GPU-Clean-Output] Slot %d: Attempting hot-plug auto-reconnection...", index + 1);
 
             Stop();
             if (Start()) {
-                blog(LOG_INFO, "[obs-clean-output] Slot %d: Hot-plug auto-reconnection successful!", index + 1);
+                blog(LOG_INFO, "[GPU-Clean-Output] Slot %d: Hot-plug auto-reconnection successful!", index + 1);
                 return;
             }
         }
@@ -281,7 +281,7 @@ bool CleanOutputContext::Start() {
     }
 
     if (!any_started) {
-        blog(LOG_WARNING, "[obs-clean-output] No active display slots to start.");
+        blog(LOG_WARNING, "[GPU-Clean-Output] No active display slots to start.");
         return false;
     }
 
@@ -396,7 +396,7 @@ void CleanOutputContext::RenderFrame() {
             }
         }
     } catch (...) {
-        blog(LOG_ERROR, "[obs-clean-output] Exception in RenderFrame");
+        blog(LOG_ERROR, "[GPU-Clean-Output] Exception in RenderFrame");
     }
 
     if (pvw_source) {
@@ -406,7 +406,7 @@ void CleanOutputContext::RenderFrame() {
 
 // C-API Wrappers for OBS Source & Output Registration
 static const char *clean_output_get_name(void *) {
-    return "D3D11 Specialized Display Clean Output";
+    return "GPU Clean Output (Specialized Display)";
 }
 
 static void *clean_source_create(obs_data_t *settings, obs_source_t *) {
@@ -520,4 +520,3 @@ struct obs_source_info clean_output_source_info = [] {
     info.get_properties = clean_output_get_properties;
     return info;
 }();
-

@@ -1,10 +1,10 @@
-# OBS Clean Output Plugin (`obs-clean-output`)
+# GPU Clean Output Plugin (`GPU-Clean-Output`)
 
 [English](README.md) | [正體中文](README.zh-TW.md)
 
-An advanced, high-performance OBS Studio output plugin for Windows 10/11. It streams clean-feed video (Program or Preview) directly to physical HDMI/DisplayPort monitors configured as **Specialized Displays** ("Remove display from desktop") using DirectX 11 and WinRT `Windows.Devices.Display.Core`.
+**GPU-Clean-Output** is an advanced, high-performance OBS Studio output plugin for Windows 10/11. It streams clean-feed video (Program or Preview) directly to physical HDMI/DisplayPort monitors configured as **Specialized Displays** ("Remove display from desktop") using DirectX 11 and WinRT `Windows.Devices.Display.Core`.
 
-By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `obs-clean-output` achieves zero-copy, hardware-exclusive direct scanout with broadcast-grade ultra-low latency.
+By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `GPU-Clean-Output` achieves zero-copy, hardware-exclusive direct scanout with broadcast-grade ultra-low latency.
 
 ---
 
@@ -34,12 +34,12 @@ By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `obs-
 
 ## 🔨 How to Build
 
-Follow these steps to build `obs-clean-output.dll` from source:
+Follow these steps to build `gpu-clean-output.dll` from source:
 
 ### 1. Clone the Repository
 ```powershell
-git clone https://github.com/your-username/obs-clean-output.git
-cd obs-clean-output
+git clone https://github.com/your-username/GPU-Clean-Output.git
+cd GPU-Clean-Output
 ```
 
 ### 2. Configure with CMake
@@ -62,21 +62,21 @@ cmake --build . --config Release
 ```
 
 Upon successful compilation, the plugin DLL will be located at:
-`build/Release/obs-clean-output.dll` (or `build/obs-clean-output.dll`).
+`build/Release/gpu-clean-output.dll` (or `build/gpu-clean-output.dll`).
 
 ---
 
 ## 📦 How to Install `.dll` File
 
 1. Close OBS Studio if it is currently running.
-2. Locate the compiled `obs-clean-output.dll` file.
-3. Copy `obs-clean-output.dll` into your OBS Studio plugins directory:
+2. Locate the compiled `gpu-clean-output.dll` file.
+3. Copy `gpu-clean-output.dll` into your OBS Studio plugins directory:
    * **Standard Installation (64-bit):**
      `C:\Program Files\obs-studio\obs-plugins\64bit\`
    * **Portable OBS Studio Installation:**
      `<OBS_DIRECTORY>\obs-plugins\64bit\`
 4. Launch OBS Studio.
-5. Verify installation by checking the OBS top menu bar: **Tools** -> **`D3D11 Specialized Display Clean Output`**.
+5. Verify installation by checking the OBS top menu bar: **Tools** -> **`GPU Clean Output (Specialized Display)`**.
 
 ---
 
@@ -95,14 +95,14 @@ Mark your external broadcast/monitor display as a Specialized Display to remove 
 5. Find the **"Remove display from desktop"** option (or **Specialized display** toggle) and turn it **ON**.
 6. Windows will immediately detach this monitor from the desktop space (it will no longer display the Windows desktop background or cursor).
 
-> ℹ️ **Note:** The monitor will appear black or go to sleep until `obs-clean-output` takes ownership and begins streaming.
+> ℹ️ **Note:** The monitor will appear black or go to sleep until `GPU-Clean-Output` takes ownership and begins streaming.
 
 ---
 
 ### Step 2: Activate Direct Output in OBS Studio
 
 1. Open **OBS Studio**.
-2. Go to the top menu bar and click **Tools** -> **`D3D11 Specialized Display Clean Output`**.
+2. Go to the top menu bar and click **Tools** -> **`GPU Clean Output (Specialized Display)`**.
 3. In the plugin configuration window:
    * Check **Enable Direct Output (啟動硬體直輸出)** to turn on master output.
    * **Target Specialized Display 1**: Select your display target from the dropdown list (e.g. `Auto-Detect First Specialized Display` or the specific hardware ID of your monitor).
@@ -132,4 +132,4 @@ The targeted physical display will instantly wake up and receive the ultra-low l
 
 ## 📄 License
 
-This project is licensed under the GPL-2.0 License - see the LICENSE file for details.
+This project is licensed under the GPL-2.0 License - see the [LICENSE](LICENSE) file for details.
