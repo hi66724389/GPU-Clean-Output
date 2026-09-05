@@ -9,6 +9,7 @@
 - **目標**：讓 OBS Studio 能將 PGM (Program) 或 PVW (Preview) 畫面，直輸出至 Windows 的「專用顯示器 (Specialized Display，即從 OS 桌面移除的硬體顯示器)」。
 - **優勢**：繞過 Windows DWM (Desktop Window Manager) 桌面合成器與滑鼠游標干擾，獲得最純淨、低延遲的 60FPS 硬體極速畫面輸出。
 - **技術棧**：C++20, WinRT `Windows.Devices.Display.Core`, DirectX 11, OBS Studio C-API (libobs).
+- **作業系統版本要求**：依微軟官方規範，Specialized Display（特殊用途顯示器 / 從桌面移除顯示器）功能**僅在 Windows 10/11 Pro (專業版)、Pro for Workstations (工作站專業版) 以及 Enterprise (企業版) 提供**。Windows Home (家用版) 不支援此功能。
 
 ---
 
@@ -179,6 +180,15 @@
   1. 每次 Present 繪圖前檢測 `device_->GetDeviceRemovedReason()` 與 WinRT 異常。
   2. 當偵測到實體裝置斷線時，標記通道狀態為 `is_degraded = true`，並呼叫 `StopPipelineInternal()` 安全關閉控制代碼與資源，保護 OBS 主程式不崩潰。
   3. 在 Render 迴圈中加入背景自動重連機制（每 2 秒輪詢一次 `Start()`），當實體螢幕重新插回時自動恢復直輸出！
+
+---
+
+### 3.15 Windows 設定中找不到「從桌面移除顯示器」選項 (OS 版本限制)
+- ❌ **常見困惑**：使用者在 Windows「設定」->「系統」->「顯示器」->「進階顯示」中，找不到「從桌面移除顯示器 (Remove display from desktop)」開關，或者該選項完全不存在。
+- 🔍 **根本原因**：微軟官方將「從桌面移除顯示器」與 WinRT `DisplayManager` 專用顯示器硬體控制權限限定於 **Windows 10/11 Pro (專業版)、Windows 10/11 Pro for Workstations (工作站專業版) 與 Enterprise (企業版)**。**Windows Home (家用版) 缺少系統底層專用顯示器框架支援**，因此無法使用此功能。
+- ✅ **正確做法**：
+  1. 檢查目前作業系統版本（按 `Win + R` 輸入 `winver` 查詢）。
+  2. 確保運行環境為 Windows Pro、Pro for Workstations 或 Enterprise 版本。
 
 ---
 
