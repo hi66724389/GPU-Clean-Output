@@ -8,7 +8,7 @@ description: Technical skill guide for implementing WinRT DisplayCore direct har
 This skill provides step-by-step patterns, anti-patterns, and architectural principles for outputting OBS Studio video frames directly to Windows Specialized Displays ("Remove display from desktop") using WinRT `Windows.Devices.Display.Core` and DirectX 11.
 
 > ⚠️ **Operating System Edition Prerequisite:**
-> Microsoft's "Specialized Displays" ("Remove display from desktop") functionality is strictly supported only on **Windows 10/11 Pro, Windows 10/11 Pro for Workstations, and Windows 10/11 Enterprise (64-bit)**. Windows Home edition is NOT supported as it lacks the OS-level display detachment capability.
+> Microsoft's "Specialized Displays" ("Remove display from desktop") functionality is strictly supported only on **Windows Enterprise, Windows Pro for Workstations, and Windows IoT Enterprise (Windows 10/11 64-bit)**. Standard Windows Pro and standard Windows Home editions are NOT supported as they lack the OS-level display detachment capability.
 
 ---
 
@@ -129,7 +129,7 @@ This skill provides step-by-step patterns, anti-patterns, and architectural prin
 | Omitting `gs_ortho` after `gs_texrender_begin` | Scene renders off-screen / scaled to single pixel | Explicitly call `gs_ortho(0, w, 0, h, -100, 100)` inside texrender pass |
 | Using CPU `memcpy` for scanout transfer | High CPU utilization & PCIe transfer latency | Use DXGI cross-adapter shared surface (`D3D11_RESOURCE_MISC_SHARED_NTHANDLE`) |
 | Blocking OBS render thread with `Flush()` | Micro-stutters and locked frame drops in OBS | Move `Flush()` and `PresentScanout()` to a dedicated Consumer worker thread |
-| Deploying on Windows Home edition | "Remove display from desktop" toggle missing in Settings; 0 specialized targets found | Use Windows 10/11 Pro, Pro for Workstations, or Enterprise edition |
+| Deploying on standard Windows Pro / Home | "Remove display from desktop" toggle missing in Settings; 0 specialized targets found | Use Windows Enterprise, Pro for Workstations, or IoT Enterprise edition |
 
 ---
 

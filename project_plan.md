@@ -7,8 +7,7 @@
 ## 2. Architecture & Foundation
 *   **Base Framework:** 基於 OBS Studio 原生 Plugin 架構進行開發與 CMake 構建。
 *   **Language:** C++20，搭配 C++/WinRT 處理 Windows 現代 API。
-*   **Graphics API:** Direct3D 11 (D3D11) 與 DXGI。
-*   **OS Support:** Windows 10/11 (64-bit) —— **需為 Windows Pro (專業版)、Pro for Workstations (工作站專業版) 或 Enterprise (企業版)**；Windows Home (家用版) 不支援微軟「特殊用途顯示器 (Specialized Display / 從桌面移除顯示器)」系統功能。
+*   **OS Support:** Windows 10/11 (64-bit) —— **需為 Windows Enterprise (企業版)、Windows Pro for Workstations (工作站專業版) 或 Windows IoT Enterprise**；標準 Windows Pro (專業版) 與 Windows Home (家用版) 均不支援微軟「特殊用途顯示器 (Specialized Display / 從桌面移除顯示器)」系統功能。
 
 ## 3. Core Modules & Implementation Details
 ### 3.1 Plugin Scaffolding

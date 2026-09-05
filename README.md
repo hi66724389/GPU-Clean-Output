@@ -23,8 +23,8 @@ By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `GPU-
 ## 💻 Requirements & Prerequisites
 
 * **Operating System:** Windows 10 (Version 1903 / Build 18362 or higher) or Windows 11 (64-bit).
-  * ⚠️ **Edition Requirement:** Microsoft's "Specialized Displays" ("Remove display from desktop") feature is only available on **Windows Pro**, **Windows Pro for Workstations**, and **Windows Enterprise** editions.
-  * ❌ **Windows Home edition is NOT supported**, as Microsoft does not provide the specialized display detachment capability in Home editions.
+  * ⚠️ **Edition Requirement:** Microsoft's "Specialized Displays" ("Remove display from desktop") feature is **ONLY supported on Windows Enterprise, Windows Pro for Workstations, and Windows IoT Enterprise** (Windows 10 / Windows 11).
+  * ❌ **Unsupported Editions:** Standard **Windows Pro** and standard **Windows Home** editions are NOT supported (they lack the specialized display detachment setting).
 * **OBS Studio:** OBS Studio v28.0.0 or higher (64-bit).
 * **Hardware:** NVIDIA, AMD, or Intel GPU supporting DirectX 11.
 * **Development / Build Tools:**
@@ -97,7 +97,7 @@ Mark your external broadcast/monitor display as a Specialized Display to remove 
 5. Find the **"Remove display from desktop"** option (or **Specialized display** toggle) and turn it **ON**.
 6. Windows will immediately detach this monitor from the desktop space (it will no longer display the Windows desktop background or cursor).
 
-> ⚠️ **Important Edition Notice:** If the **"Remove display from desktop" toggle is missing** in Advanced Display settings, check your Windows edition. This setting requires **Windows Pro, Pro for Workstations, or Enterprise**. Windows Home edition does not support this feature.
+> ⚠️ **Important Edition Notice:** If the **"Remove display from desktop" toggle is missing** in Advanced Display settings, check your Windows edition. This setting requires **Windows Enterprise, Windows Pro for Workstations, or Windows IoT Enterprise**. Standard **Windows Pro** and **Windows Home** editions do not support this feature.
 >
 > ℹ️ **Note:** The monitor will appear black or go to sleep until `GPU-Clean-Output` takes ownership and begins streaming.
 

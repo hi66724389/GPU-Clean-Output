@@ -23,8 +23,8 @@
 ## 💻 系統需求與前置條件
 
 * **作業系統：** Windows 10 (Version 1903 / Build 18362 以上) 或 Windows 11 (64-bit)。
-  * ⚠️ **版本限制注意：** 微軟的「特殊用途顯示器 (Specialized Display / 從桌面移除顯示器)」功能僅支援 **Windows Pro (專業版)**、**Windows Pro for Workstations (工作站專業版)** 以及 **Windows Enterprise (企業版)**。
-  * ❌ **Windows Home (家用版) 不支援** 此項微軟系統功能，無法在系統設定中將顯示器從桌面移除。
+  * ⚠️ **版本限制注意：** 微軟的「特殊用途顯示器 (Specialized Display / 從桌面移除顯示器)」功能僅支援 **Windows Enterprise (企業版)**、**Windows Pro for Workstations (工作站專業版)** 以及 **Windows IoT Enterprise**。
+  * ❌ **不支援版本：** 一般的 **Windows Pro (標準專業版)** 與 **Windows Home (家用版)** 均不支援此項微軟系統功能，無法在系統設定中將顯示器從桌面移除。
 * **OBS Studio：** OBS Studio v28.0.0 或更高版本 (64-bit)。
 * **硬體：** 支援 DirectX 11 的 NVIDIA、AMD 或 Intel 獨立/整合顯示卡。
 * **開發與編譯工具：**
@@ -97,7 +97,7 @@ cmake --build . --config Release
 5. 找到 **「從桌面移除顯示器 (Remove display from desktop)」** 選項（或 **特殊用途顯示器** 開關），並將其切換為 **開啟 (ON)**。
 6. Windows 將立即將該顯示器自桌面視窗管理中移除（該顯示器將不再顯示 Windows 桌面背景或滑鼠游標）。
 
-> ⚠️ **重要版本提示：** 若在進階顯示設定中**找不到「從桌面移除顯示器」選項或開關**，請確認您的 Windows 版本是否為 **Pro (專業版)、Pro for Workstations (工作站版) 或 Enterprise (企業版)**。Windows Home (家用版) 系統中不具備此微軟功能。
+> ⚠️ **重要版本提示：** 若在進階顯示設定中**找不到「從桌面移除顯示器」選項或開關**，請確認您的 Windows 版本是否為 **Enterprise (企業版)、Pro for Workstations (工作站專業版) 或 IoT Enterprise**。標準 **Windows Pro (專業版)** 與 **Windows Home (家用版)** 系統中均未提供此微軟功能。
 >
 > ℹ️ **注意：** 在 `GPU-Clean-Output` 尚未接管並開始輸出畫面之前，該顯示器會暫時呈現黑畫面或進入待機狀態，此為正常現象。
 
