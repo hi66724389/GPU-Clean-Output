@@ -40,7 +40,7 @@ Follow these steps to build `gpu-clean-output.dll` from source:
 
 ### 1. Clone the Repository
 ```powershell
-git clone https://github.com/your-username/GPU-Clean-Output.git
+git clone https://github.com/hi66724389/GPU-Clean-Output.git
 cd GPU-Clean-Output
 ```
 
