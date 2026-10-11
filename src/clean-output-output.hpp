@@ -17,6 +17,9 @@ struct DisplayOutputSlot {
     bool enabled{ false };
     bool use_preview{ false };
     std::string target_id{ "none" };
+    uint32_t mode_width{ 0 };
+    uint32_t mode_height{ 0 };
+    uint32_t mode_refresh_millihertz{ 0 };
     bool active{ false };
     std::atomic<bool> is_degraded{ false };
     uint64_t last_reconnect_time{ 0 };

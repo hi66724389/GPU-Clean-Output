@@ -50,6 +50,7 @@ bool DisplayOutputSlot::Start() {
         return false;
     }
 
+#ifdef _WIN32
     if (!display_manager->TryApplyAndLock()) {
         blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to lock specialized display", index + 1);
         return false;
@@ -57,7 +58,6 @@ bool DisplayOutputSlot::Start() {
 
     uint32_t width = display_manager->GetWidth();
     uint32_t height = display_manager->GetHeight();
-
     IDXGIAdapter *adapter = display_manager->GetDXGIAdapter();
     if (!adapter) {
         blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to get DXGI adapter", index + 1);
@@ -78,6 +78,19 @@ bool DisplayOutputSlot::Start() {
         display_manager->Release();
         return false;
     }
+#else
+    if (!display_manager->TryApplyAndLock(mode_width, mode_height, mode_refresh_millihertz)) {
+        blog(LOG_ERROR, "[GPU-Clean-Output] Slot %d: Failed to acquire Wayland DRM lease", index + 1);
+        return false;
+    }
+    uint32_t width = display_manager->GetWidth();
+    uint32_t height = display_manager->GetHeight();
+    if (!renderer->InitializeOnAdapter(display_manager.get(), width, height) ||
+        !renderer->BindScanoutTarget(display_manager.get())) {
+        display_manager->Release();
+        return false;
+    }
+#endif
 
     // Initialize GPU Zero-Copy Shared Surface
     if (!renderer->InitializeGPUSharedTexture()) {
@@ -337,14 +350,27 @@ void CleanOutputContext::UpdateSettings(obs_data_t *settings) {
             if (val) source_type = val;
         }
 
+        char width_key[32], height_key[32], refresh_key[32];
+        snprintf(width_key, sizeof(width_key), "out%zu_width", i + 1);
+        snprintf(height_key, sizeof(height_key), "out%zu_height", i + 1);
+        snprintf(refresh_key, sizeof(refresh_key), "out%zu_refresh", i + 1);
+        uint32_t mode_width = static_cast<uint32_t>(obs_data_get_int(settings, width_key));
+        uint32_t mode_height = static_cast<uint32_t>(obs_data_get_int(settings, height_key));
+        uint32_t mode_refresh = static_cast<uint32_t>(obs_data_get_int(settings, refresh_key) * 1000);
+
         bool slot_enabled = master_active && (target_id != "none");
         bool slot_use_preview = (source_type == "pvw");
 
-        bool config_changed = (slots_[i].target_id != target_id || slots_[i].use_preview != slot_use_preview || slots_[i].enabled != slot_enabled);
+        bool config_changed = (slots_[i].target_id != target_id || slots_[i].use_preview != slot_use_preview ||
+                               slots_[i].enabled != slot_enabled || slots_[i].mode_width != mode_width ||
+                               slots_[i].mode_height != mode_height || slots_[i].mode_refresh_millihertz != mode_refresh);
 
         slots_[i].target_id = target_id;
         slots_[i].use_preview = slot_use_preview;
         slots_[i].enabled = slot_enabled;
+        slots_[i].mode_width = mode_width;
+        slots_[i].mode_height = mode_height;
+        slots_[i].mode_refresh_millihertz = mode_refresh;
 
         if (config_changed && active_) {
             slots_[i].Stop();
@@ -436,6 +462,15 @@ static void clean_output_get_defaults(obs_data_t *settings) {
     obs_data_set_default_string(settings, "out3_source", "pgm");
     obs_data_set_default_string(settings, "out4_target", "none");
     obs_data_set_default_string(settings, "out4_source", "pgm");
+    for (size_t i = 0; i < MAX_DISPLAY_SLOTS; ++i) {
+        char key[32];
+        snprintf(key, sizeof(key), "out%zu_width", i + 1);
+        obs_data_set_default_int(settings, key, 0);
+        snprintf(key, sizeof(key), "out%zu_height", i + 1);
+        obs_data_set_default_int(settings, key, 0);
+        snprintf(key, sizeof(key), "out%zu_refresh", i + 1);
+        obs_data_set_default_int(settings, key, 0);
+    }
 }
 
 static obs_properties_t *clean_output_get_properties(void *) {
@@ -478,6 +513,17 @@ static obs_properties_t *clean_output_get_properties(void *) {
             );
             obs_property_list_add_string(source_list, "Program (PGM 主畫面)", "pgm");
             obs_property_list_add_string(source_list, "Preview (PVW 預覽畫面)", "pvw");
+
+            char width_key[32], height_key[32], refresh_key[32];
+            snprintf(width_key, sizeof(width_key), "out%zu_width", i + 1);
+            snprintf(height_key, sizeof(height_key), "out%zu_height", i + 1);
+            snprintf(refresh_key, sizeof(refresh_key), "out%zu_refresh", i + 1);
+            obs_properties_add_int(props, width_key, "Lease width (0 = monitor default)",
+                                   0, 16384, 1);
+            obs_properties_add_int(props, height_key, "Lease height (0 = monitor default)",
+                                   0, 16384, 1);
+            obs_properties_add_int(props, refresh_key, "Lease refresh rate (Hz, 0 = default)",
+                                   0, 1000, 1);
         }
     } catch (...) {}
 

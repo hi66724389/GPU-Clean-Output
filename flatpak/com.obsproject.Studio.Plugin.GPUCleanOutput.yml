@@ -1,0 +1,27 @@
+id: com.obsproject.Studio.Plugin.GPUCleanOutput
+runtime: com.obsproject.Studio
+runtime-version: stable
+sdk: org.freedesktop.Sdk//25.08
+build-extension: true
+separate-locales: false
+appstream-compose: false
+
+finish-args:
+  - --socket=wayland
+  - --device=all
+
+modules:
+  - name: gpu-clean-output
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DOBS_SDK_DIR=obs-source
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DCMAKE_INSTALL_PREFIX=/app/plugins/GPUCleanOutput
+    sources:
+      - type: dir
+        path: ..
+      - type: archive
+        url: https://github.com/obsproject/obs-studio/archive/refs/tags/32.2.2.tar.gz
+        sha256: 35d3cd0979d65664fada7119fdb612eca7c34b61a1623a330caec74bf72626c4
+        dest: obs-source

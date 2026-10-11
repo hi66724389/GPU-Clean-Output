@@ -2,7 +2,7 @@
 
 [English](README.md) | [正體中文](README.zh-TW.md)
 
-**GPU-Clean-Output** is an advanced, high-performance OBS Studio output plugin for Windows 10/11. It streams clean-feed video (Program or Preview) directly to physical HDMI/DisplayPort monitors configured as **Specialized Displays** ("Remove display from desktop") using DirectX 11 and WinRT `Windows.Devices.Display.Core`.
+**GPU-Clean-Output** is an advanced, high-performance OBS Studio output plugin for Windows 10/11 and Wayland Linux. It streams clean-feed video (Program or Preview) directly to physical HDMI/DisplayPort monitors configured as **Specialized Displays** ("Remove display from desktop") or leased through the Wayland DRM leasing protocol.
 
 By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `GPU-Clean-Output` achieves zero-copy, hardware-exclusive direct scanout with broadcast-grade ultra-low latency.
 
@@ -17,12 +17,14 @@ By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `GPU-
 * **Flexible Video Routing:** Choose **Program (PGM)** or **Preview (PVW)** feed individually for each output slot (ideal for broadcast Studio Mode setup).
 * **Ultra-Low Latency Engine:** Dedicated background worker threads with hybrid spin-wait mechanisms for sub-millisecond frame submission response.
 * **Hot-Plug & Self-Recovery:** Automatic connection monitoring and recovery upon DXGI device resets or display topology changes.
+* **Wayland DRM leasing:** On compositors advertising `wp_drm_lease_device_v1`, the selected connector is removed from desktop composition and driven through its leased DRM CRTC.
+* **Explicit leased mode:** Each output slot has independent width, height, and refresh-rate controls. A value of `0` uses the connector's first advertised mode/default.
 
 ---
 
 ## 💻 Requirements & Prerequisites
 
-* **Operating System:** Windows 10 (Version 1903 / Build 18362 or higher) or Windows 11 (64-bit).
+* **Operating System:** Windows 10 (Version 1903 / Build 18362 or higher), Windows 11 (64-bit), or a Wayland Linux session with DRM leasing enabled.
   * ⚠️ **Edition Requirement:** Microsoft's "Specialized Displays" ("Remove display from desktop") feature is **ONLY supported on Windows Enterprise, Windows Pro for Workstations, and Windows IoT Enterprise** (Windows 10 / Windows 11).
   * ❌ **Unsupported Editions:** Standard **Windows Pro** and standard **Windows Home** editions are NOT supported (they lack the specialized display detachment setting).
 * **OBS Studio:** OBS Studio v28.0.0 or higher (64-bit).
@@ -31,6 +33,7 @@ By bypassing the Windows Desktop Window Manager (DWM) compositor entirely, `GPU-
   * Visual Studio 2019 / 2022 (with *Desktop development with C++* workload).
   * CMake 3.16 or newer.
   * Windows 10/11 SDK.
+  * Linux: CMake 3.16+, `libdrm`, `wayland-client`, `wayland-scanner`, and `wayland-protocols` (staging DRM lease protocol).
 
 ---
 
@@ -65,6 +68,33 @@ cmake --build . --config Release
 
 Upon successful compilation, the plugin DLL will be located at:
 `build/Release/gpu-clean-output.dll` (or `build/gpu-clean-output.dll`).
+
+On Linux, configure and build with:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+### Flatpak OBS builds
+
+The project includes `flatpak/com.obsproject.Studio.Plugin.GPUCleanOutput.yml`
+for the OBS Studio Flatpak runtime. It builds as an OBS plugin extension and
+uses the matching OBS Studio source tag for headers while linking against the
+libraries supplied by the OBS runtime. The CMake install rule places the
+module in the extension at
+`/app/plugins/GPUCleanOutput/lib/obs-plugins`.
+
+When building from an OBS Flatpak SDK shell:
+
+```bash
+flatpak-builder --force-clean flatpak-build \
+  flatpak/com.obsproject.Studio.Plugin.GPUCleanOutput.yml
+```
+
+The manifest currently follows OBS Studio 32.2.2. Update its OBS source tag
+when targeting a different OBS runtime version. The runtime must provide the
+staging `drm-lease-v1` protocol through `wayland-protocols`.
 
 ---
 
@@ -115,6 +145,10 @@ Mark your external broadcast/monitor display as a Specialized Display to remove 
 4. Click **OK** / close the dialog.
 
 The targeted physical display will instantly wake up and receive the ultra-low latency clean feed direct from the GPU!
+
+### Wayland DRM lease mode
+
+On Linux, use a compositor that advertises `wp_drm_lease_device_v1` (for example, a compositor configured for VR/HDR or direct-display leasing). The target list shows the connectors offered by the compositor. Select a connector, then set **Lease width**, **Lease height**, and **Lease refresh rate** for that output slot; set any value to `0` to let the backend choose the connector default. When the output starts, the connector is leased away from the desktop and the OBS feed is written to the leased DRM framebuffer. Releasing the output returns the connector to the compositor.
 
 ---
 

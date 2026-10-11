@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef _WIN32
+
 #include <d3d11.h>
 #include <d3d11_1.h>
 #include <dxgi1_2.h>
@@ -62,3 +64,34 @@ private:
     uint32_t width_{ 0 };
     uint32_t height_{ 0 };
 };
+
+#else
+
+#include <obs-module.h>
+#include <graphics/graphics.h>
+#include <cstdint>
+
+class SpecialDisplayManager;
+class D3D11OutputRenderer {
+public:
+    D3D11OutputRenderer() = default;
+    ~D3D11OutputRenderer() { Cleanup(); }
+    bool InitializeOnAdapter(SpecialDisplayManager *, uint32_t width, uint32_t height) {
+        width_ = width; height_ = height; return true;
+    }
+    bool BindScanoutTarget(SpecialDisplayManager *manager) { manager_ = manager; return manager_ != nullptr; }
+    bool InitializeGPUSharedTexture() { return false; }
+    bool ProducerCopyFrameGPU(gs_texture_t *) { return false; }
+    bool ConsumerPresentFrameGPU() { return false; }
+    bool CopyFrameToScanout(gs_texture_t *texture);
+    void Cleanup();
+    void DestroyStagesurf();
+    bool IsDeviceRemoved() const { return false; }
+private:
+    SpecialDisplayManager *manager_{nullptr};
+    gs_stagesurf_t *stagesurf_{nullptr};
+    uint32_t width_{0};
+    uint32_t height_{0};
+};
+
+#endif

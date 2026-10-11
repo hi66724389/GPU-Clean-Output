@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef _WIN32
+
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Devices.Display.h>
@@ -24,6 +26,7 @@ struct DisplayTargetInfo {
 
 class SpecialDisplayManager {
 public:
+    struct WaylandState;
     SpecialDisplayManager();
     ~SpecialDisplayManager();
 
@@ -80,3 +83,61 @@ private:
     uint32_t height_{ 1080 };
     std::string device_name_;
 };
+
+#else
+
+#include <cstdint>
+#include <string>
+#include <vector>
+
+struct DisplayModeInfo {
+    uint32_t width{0};
+    uint32_t height{0};
+    uint32_t refresh_millihertz{0};
+    std::string name;
+};
+
+struct DisplayTargetInfo {
+    std::string id;
+    std::string name;
+    std::vector<DisplayModeInfo> modes;
+};
+
+class SpecialDisplayManager {
+public:
+    struct WaylandState;
+    SpecialDisplayManager();
+    ~SpecialDisplayManager();
+    std::vector<DisplayTargetInfo> EnumerateSpecializedDisplays();
+    bool Initialize(const std::string &target_id = "");
+    bool TryApplyAndLock(uint32_t width = 0, uint32_t height = 0,
+                         uint32_t refresh_millihertz = 0);
+    void PresentScanout();
+    void Release();
+    bool HasSpecializedDisplay() const { return lease_fd_ >= 0; }
+    uint32_t GetWidth() const { return width_; }
+    uint32_t GetHeight() const { return height_; }
+    uint32_t GetRefreshMillihertz() const { return refresh_millihertz_; }
+    const std::string &GetDeviceName() const { return device_name_; }
+    int GetLeaseFd() const { return lease_fd_; }
+    uint8_t *GetFrameBuffer() const { return framebuffer_; }
+    uint32_t GetFrameBufferPitch() const { return framebuffer_pitch_; }
+
+private:
+    WaylandState *wayland_{nullptr};
+    int lease_fd_{-1};
+    uint32_t connector_id_{0};
+    uint32_t crtc_id_{0};
+    uint32_t framebuffer_id_{0};
+    uint32_t dumb_handle_{0};
+    uint64_t dumb_size_{0};
+    uint8_t *framebuffer_{nullptr};
+    uint32_t framebuffer_pitch_{0};
+    uint32_t width_{1920};
+    uint32_t height_{1080};
+    uint32_t refresh_millihertz_{60000};
+    std::string target_id_;
+    std::string device_name_;
+};
+
+#endif

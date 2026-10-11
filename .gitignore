@@ -1,4 +1,7 @@
 build/
+build-*/
+.flatpak-builder/
+flatpak-build/
 .vs/
 out/
 *.user
@@ -7,3 +10,5 @@ out/
 .DS_Store
 
 *.zip
+*.tar.gz
+compile_commands.json

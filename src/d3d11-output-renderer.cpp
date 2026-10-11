@@ -1,4 +1,7 @@
 #include "d3d11-output-renderer.hpp"
+
+#ifdef _WIN32
+#include "d3d11-output-renderer.hpp"
 #include <obs-module.h>
 #include <graphics/graphics.h>
 #include <algorithm>
@@ -261,13 +264,64 @@ bool D3D11OutputRenderer::CopyFrameToScanout(gs_texture_t *obs_tex) {
                 gs_stagesurface_destroy(stagesurf_);
                 stagesurf_ = nullptr;
             }
+
+            #else
+
+            #include "special-display-manager.hpp"
+            #include <cstring>
+            #include <algorithm>
+
+            void D3D11OutputRenderer::Cleanup()
+            {
+                DestroyStagesurf();
+                manager_ = nullptr;
+            }
+
+            void D3D11OutputRenderer::DestroyStagesurf()
+            {
+                if (stagesurf_) {
+                    gs_stagesurface_destroy(stagesurf_);
+                    stagesurf_ = nullptr;
+                }
+            }
+
+            bool D3D11OutputRenderer::CopyFrameToScanout(gs_texture_t *obs_tex)
+            {
+                if (!obs_tex || !manager_ || !manager_->GetFrameBuffer())
+                    return false;
+                const uint32_t width = std::min(gs_texture_get_width(obs_tex), width_);
+                const uint32_t height = std::min(gs_texture_get_height(obs_tex), height_);
+                if (!width || !height)
+                    return false;
+                if (!stagesurf_ || gs_stagesurface_get_width(stagesurf_) != width ||
+                    gs_stagesurface_get_height(stagesurf_) != height) {
+                    DestroyStagesurf();
+                    stagesurf_ = gs_stagesurface_create(width, height, GS_BGRA);
+                }
+                if (!stagesurf_)
+                    return false;
+                gs_stage_texture(stagesurf_, obs_tex);
+                uint8_t *data = nullptr;
+                uint32_t linesize = 0;
+                if (!gs_stagesurface_map(stagesurf_, &data, &linesize) || !data)
+                    return false;
+                uint8_t *destination = manager_->GetFrameBuffer();
+                const uint32_t destination_pitch = manager_->GetFrameBufferPitch();
+                for (uint32_t row = 0; row < height; ++row)
+                    std::memcpy(destination + row * destination_pitch, data + row * linesize, width * 4);
+                gs_stagesurface_unmap(stagesurf_);
+                return true;
+            }
+
+
+#endif
+#ifdef _WIN32
         }
 
         if (!stagesurf_) {
             stagesurf_ = gs_stagesurface_create(copy_w, copy_h, GS_BGRA);
             if (!stagesurf_) return false;
         }
-
         gs_stage_texture(stagesurf_, obs_tex);
 
         uint8_t *data = nullptr;
@@ -290,3 +344,5 @@ bool D3D11OutputRenderer::CopyFrameToScanout(gs_texture_t *obs_tex) {
         return false;
     }
 }
+
+#endif
